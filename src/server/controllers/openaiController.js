@@ -9,8 +9,8 @@ const openai = new OpenAI({
 
 const router = express.Router();
 
-// Generate questions based on the provided topic
-const generateQuestions = async (req, res) => {
+// Generate a single question based on the provided topic
+const generateQuestion = async (req, res) => {
   const { topic } = req.body; // Get topic from the request body
 
   try {
@@ -23,26 +23,26 @@ const generateQuestions = async (req, res) => {
         },
         {
           role: 'user',
-          content: `Generate 5 essay-type questions from the topic: ${topic}`,
+          content: `Generate an essay-type question from the topic: ${topic}`,
         },
       ],
     });
 
-    // Ensure the response is mapped correctly to extract questions
-    const questions = completion.choices.map((choice) => choice.message.content);
+    // Ensure the response is mapped correctly to extract the question
+    const question = completion.choices[0].message.content.trim();
     
-    // Send questions back to the client
-    res.json({ questions });
+    // Send the question back to the client
+    res.json({ question });
   } catch (error) {
     // Handle different types of errors (response, request, and others)
     if (error.response) {
-      console.error('Error generating questions:', error.response.data);
-      res.status(500).json({ error: 'Failed to generate questions', details: error.response.data });
+      console.error('Error generating question:', error.response.data);
+      res.status(500).json({ error: 'Failed to generate question', details: error.response.data });
     } else if (error.request) {
-      console.error('Error generating questions:', error.request);
+      console.error('Error generating question:', error.request);
       res.status(500).json({ error: 'No response received from OpenAI', details: error.request });
     } else {
-      console.error('Error generating questions:', error.message);
+      console.error('Error generating question:', error.message);
       res.status(500).json({ error: 'Unexpected error', details: error.message });
     }
   }
@@ -68,7 +68,7 @@ const grade = async (req, res) => {
     });
 
     // Extract the grading result
-    const scoreText = completion.choices[0].message.content;
+    const scoreText = completion.choices[0].message.content.trim();
     
     // Parse score, assuming it's a numeric value or scale provided by OpenAI
     let score = parseFloat(scoreText); // You may need to adapt this based on how OpenAI responds
@@ -89,7 +89,7 @@ const grade = async (req, res) => {
 };
 
 // Define routes for generating questions and grading
-router.post('/generate-questions', generateQuestions);
+router.post('/generate-question', generateQuestion); // Updated to singular
 router.post('/grade', grade);
 
 module.exports = router;
