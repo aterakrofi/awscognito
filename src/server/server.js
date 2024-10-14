@@ -4,7 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const openaiRoutes = require('./routes/openaiRoutes');
 
-console.log(process.env.OPENAI_API_KEY);
+//console.log(process.env.OPENAI_API_KEY);
 const app = express();
 app.use(express.json());
 app.use(cors()); // Enable CORS for requests from the React app

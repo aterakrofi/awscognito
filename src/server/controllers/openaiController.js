@@ -1,4 +1,3 @@
-// src/server/controllers/openaiController.js
 const OpenAI = require('openai');
 const express = require('express');
 
@@ -9,8 +8,8 @@ const openai = new OpenAI({
 
 const router = express.Router();
 
-// Generate a single question based on the provided topic
-const generateQuestion = async (req, res) => {
+// Generate multiple questions based on the provided topic
+const generateQuestions = async (req, res) => {
   const { topic } = req.body; // Get topic from the request body
 
   try {
@@ -19,68 +18,74 @@ const generateQuestion = async (req, res) => {
       messages: [
         {
           role: 'system',
-          content: 'You are a helpful assistant.',
+          content: 'You are a useful assistant.',
         },
         {
           role: 'user',
-          content: `Generate an essay-type question from the topic: ${topic}`,
+          content: `Generate 5 essay-type knowledge check questions from the topic: ${topic}`,
         },
       ],
     });
 
-    // Ensure the response is mapped correctly to extract the question
-    const question = completion.choices[0].message.content.trim();
-    
-    // Send the question back to the client
-    res.json({ question });
+    // Ensure the response is mapped correctly to extract the questions
+    const questions = completion.choices[0].message.content.trim().split('\n').filter(q => q);
+
+    // Send the questions back to the client
+    res.json({ questions });
   } catch (error) {
     // Handle different types of errors (response, request, and others)
     if (error.response) {
-      console.error('Error generating question:', error.response.data);
-      res.status(500).json({ error: 'Failed to generate question', details: error.response.data });
+      console.error('Error generating questions:', error.response.data);
+      res.status(500).json({ error: 'Failed to generate questions', details: error.response.data });
     } else if (error.request) {
-      console.error('Error generating question:', error.request);
+      console.error('Error generating questions:', error.request);
       res.status(500).json({ error: 'No response received from OpenAI', details: error.request });
     } else {
-      console.error('Error generating question:', error.message);
+      console.error('Error generating questions:', error.message);
       res.status(500).json({ error: 'Unexpected error', details: error.message });
     }
   }
 };
 
-// Grade the answer for a specific question
+// Grade the answers for the questions
 const grade = async (req, res) => {
-  const { question, answer } = req.body; // Get question and answer from the request body
+  const { questions, answers } = req.body; // Get questions and answers from the request body
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a helpful assistant that grades answers.',
-        },
-        {
-          role: 'user',
-          content: `Grade the following answer for the question "${question}": "${answer}"`,
-        },
-      ],
-    });
+    const feedback = [];
+    let totalScore = 0;
 
-    // Extract the grading result
-    const scoreText = completion.choices[0].message.content.trim();
-    
-    // Parse score, assuming it's a numeric value or scale provided by OpenAI
-    let score = parseFloat(scoreText); // You may need to adapt this based on how OpenAI responds
+    for (let i = 0; i < questions.length; i++) {
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a useful assistant that grades user answers and adds feedback.',
+          },
+          {
+            role: 'user',
+            content: `Grade the following answer for the question "${questions[i]}": "${answers[i]}"`,
+          },
+        ],
+      });
 
-    if (isNaN(score)) {
-      // Handle non-numeric grading response
-      console.warn('Non-numeric score received:', scoreText);
-      res.json({ score: 'Invalid score response: ' + scoreText });
-    } else {
-      // Send the numeric score back to the client
-      res.json({ score });
+      // Extract the grading result
+      const scoreText = completion.choices[0].message.content.trim();
+      let score = parseFloat(scoreText); // You may need to adapt this based on how OpenAI responds
+
+      if (isNaN(score)) {
+        // Handle non-numeric grading response
+        console.warn('Non-numeric score received:', scoreText);
+        feedback.push('Invalid score response: ' + scoreText);
+      } else {
+        totalScore += score;
+        feedback.push(scoreText);
+      }
     }
+
+    // Send the total score and feedback back to the client
+    res.json({ totalScore, feedback });
   } catch (error) {
     // Handle errors with appropriate logging and responses
     console.error('Error grading:', error);
@@ -89,7 +94,7 @@ const grade = async (req, res) => {
 };
 
 // Define routes for generating questions and grading
-router.post('/generate-question', generateQuestion); // Updated to singular
+router.post('/generate-questions', generateQuestions); // Updated to plural
 router.post('/grade', grade);
 
 module.exports = router;
