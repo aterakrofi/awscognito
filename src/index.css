@@ -1,13 +1,90 @@
+/* Base styling for the entire body */
 body {
   margin: 0;
+  padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f6fa; /* Light background color for the whole page */
+  color: #333; /* Dark text color for good contrast */
+  line-height: 1.6; /* Improved line spacing */
 }
 
+/* Styling for code elements */
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+  background-color: #f4f4f4; /* Light background for code blocks */
+  padding: 4px 8px; /* Padding to make code elements stand out */
+  border-radius: 4px; /* Rounded corners */
+  color: #e74c3c; /* Light red color for code text */
+}
+
+/* Base container for the entire app */
+#root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #ffffff; /* Light background color for a modern look */
+}
+
+/* Header container */
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between; /* Space between logo and buttons */
+  align-items: center;
+  padding: 10px 20px;
+   /* Primary color for header */
+}
+
+/* Logo styling */
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+}
+
+/* Navigation buttons container */
+.nav-buttons {
+  display: flex;
+  gap: 10px; /* Space between buttons */
+}
+
+/* Button styles */
+button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  background-color: #3498db; /* Primary button color */
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #2980b9; /* Darker shade of the primary color */
+}
+
+/* Welcome text styling */
+.welcome {
+  margin-top: 20vh; /* Center vertically with some space from header */
+  font-size: 28px;
+  text-align: center;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .nav-buttons {
+    margin-top: 10px;
+  }
 }

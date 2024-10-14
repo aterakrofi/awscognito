@@ -1,24 +1,38 @@
-import React from 'react'
-import { Button, Typography } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
+import React from 'react';
+import { Button, Typography, Container, AppBar, Toolbar } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
-    const Navigate=useNavigate();
-    return (
-        <>
-            <div className='home'>
-                <Typography variant='h3'>Welcome</Typography>
-                <div className='homeButtons'>
-                    <Button style={{margin:'10px'}} variant='contained' onClick={()=>Navigate('/signup')}>
-                        Signup
-                    </Button>
-                    <Button style={{margin:'10px'}} variant='contained' onClick={()=>Navigate('/login')}>
-                        Login
-                    </Button>
-                </div>
-            </div>
-        </>
-    )
-}
+  const navigate = useNavigate();
 
-export default Home
+  return (
+    <div id="root">
+      <div className="header">
+        <Typography variant="h3" className="welcome">
+          Welcome
+        </Typography>
+        <div className="homeButtons">
+          <Button
+            className="primary"
+            variant="contained"
+            onClick={() => navigate('/signup')}
+          >
+            Signup
+          </Button>
+          <Button
+            className="secondary"
+            variant="contained"
+            onClick={() => navigate('/login')}
+          >
+            Login
+          </Button>
+        </div>
+      </div>
+      <Container>
+        {/* Additional content can go here */}
+      </Container>
+    </div>
+  );
+};
+
+export default Home;

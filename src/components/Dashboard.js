@@ -1,36 +1,44 @@
-import { Button } from '@mui/material'
-import React,{useEffect} from 'react'
+// src/components/Dashboard.js
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import userpool from '../userpool'
-import { logout } from '../services/authenticate';
+import userpool from '../userpool';
 
-const Dashboard = () => {
+function Dashboard() {
+  const navigate = useNavigate();
 
-  const Navigate = useNavigate();
+  const handleStartAssessment = () => {
+    navigate('/assessment');
+  };
 
-  useEffect(()=>{
-    let user=userpool.getCurrentUser();
-    console.log(user);
-    if(!user){
-      Navigate('/login');
+  const handleSettings = () => {
+    navigate('/settings');
+  };
+
+  const handleLogin = () => {
+    navigate('/login');
+  };
+
+  const handleLogout = () => {
+    const user = userpool.getCurrentUser();
+    if (user) {
+      user.signOut();
+      navigate('/');
     }
-  },[]);
-
-  const handleLogoout=()=>{
-    logout();
   };
 
   return (
-    <div className='Dashboard'>
-      <Button
-        style={{margin:"10px"}}
-        variant='contained'
-        onClick={handleLogoout}
-      >
-        Logout
-      </Button>
+    <div>
+      <button onClick={handleStartAssessment}>Start Assessment</button>
+      <button onClick={handleSettings}>Settings</button>
+      <button onClick={handleLogout}>Logout</button>
+      <h1>Dashboard</h1>
+      <p>User Progress: {/* Display user progress */}</p>
+      <p>Scores: {/* Display user scores */}</p>
+      <p>Past Assessments: {/* Display past assessments */}</p>
+      <p>Future Assessments Configurations: {/* Display configurations for future assessments */}</p>
+      
     </div>
-  )
+  );
 }
 
-export default Dashboard
+export default Dashboard;
