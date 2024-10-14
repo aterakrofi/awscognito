@@ -1,5 +1,5 @@
 // src/components/Assessment.js
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 
 function Assessment() {
@@ -8,7 +8,7 @@ function Assessment() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [score, setScore] = useState(0);
+  const [score, setScore] = useState(null);
 
   const handleSearch = async () => {
     if (!topic) {
@@ -18,16 +18,11 @@ function Assessment() {
 
     setLoading(true);
     try {
-      const response = await axios.post('/api/openai/generate-questions', {
-        topic,
-      });
-      const data = response.data;
-
-      // Corrected line: data.questions instead of data.choices
-      const questions = data.questions;
+      const response = await axios.post('/api/openai/generate-questions', { topic });
+      const { questions } = response.data;
       setQuestions(questions);
       setCurrentQuestion(0);
-      setAnswers([]);
+      setAnswers(Array(questions.length).fill(''));  // Initialize answers array
     } catch (error) {
       console.error('Error generating questions:', error);
       alert('Error generating questions. Please try again.');
@@ -36,16 +31,20 @@ function Assessment() {
     }
   };
 
-  const handleAnswer = (answer) => {
-    // Update answers array
+  const handleAnswerChange = (e) => {
     const newAnswers = [...answers];
-    newAnswers[currentQuestion] = answer;  // Ensure answer is placed at the correct index
+    newAnswers[currentQuestion] = e.target.value;
     setAnswers(newAnswers);
-    setCurrentQuestion(currentQuestion + 1);
+  };
+
+  const handleNext = () => {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    }
   };
 
   const handleSubmit = async () => {
-    if (currentQuestion < questions.length) {
+    if (answers.some(answer => answer === '')) {
       alert('Please answer all questions before submitting');
       return;
     }
@@ -58,7 +57,8 @@ function Assessment() {
           answer: answers[index],
         });
       }));
-      const totalScore = scores.reduce((acc, score) => acc + score.data.score, 0);
+      
+      const totalScore = scores.reduce((acc, score) => acc + parseFloat(score.data.score || 0), 0);
       setScore(totalScore);
     } catch (error) {
       console.error('Error grading:', error);
@@ -70,34 +70,53 @@ function Assessment() {
 
   return (
     <div>
-      <input
-        type="text"
-        value={topic}
-        onChange={(e) => setTopic(e.target.value)}
-        placeholder="Type a topic"
-      />
-      <button onClick={handleSearch} disabled={loading}>
-        {loading ? 'Loading...' : 'Search'}
-      </button>
+      {/* Topic Search */}
+      <div>
+        <input
+          type="text"
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          placeholder="Enter a topic"
+        />
+        <button onClick={handleSearch} disabled={loading}>
+          {loading ? 'Loading...' : 'Search'}
+        </button>
+      </div>
 
-      {questions.length > 0 && currentQuestion < questions.length && (
+      {/* Questions and Answer Input */}
+      {questions.length > 0 && (
         <div>
+          <h3>Question {currentQuestion + 1}:</h3>
           <p>{questions[currentQuestion]}</p>
-          <input
-            type="text"
-            value={answers[currentQuestion] || ''}
-            onChange={(e) => handleAnswer(e.target.value)}
+          <textarea
+            value={answers[currentQuestion]}
+            onChange={handleAnswerChange}
+            placeholder="Type your answer here"
+            rows="5"
+            style={{ width: '100%', padding: '10px' }}
           />
-          <button onClick={() => handleAnswer('')}>Next</button>
+          
+          {/* Next Button for Non-final Questions */}
+          {currentQuestion < questions.length - 1 && (
+            <button onClick={handleNext}>
+              Next
+            </button>
+          )}
+
+          {/* Submit Button for Final Question */}
+          {currentQuestion === questions.length - 1 && (
+            <button onClick={handleSubmit} disabled={loading}>
+              {loading ? 'Submitting...' : 'Submit'}
+            </button>
+          )}
         </div>
       )}
 
-      {currentQuestion >= questions.length && (
-        <button onClick={handleSubmit}>Submit</button>
-      )}
-
-      {score > 0 && (
-        <p>Your total score is: {score}</p>
+      {/* Show Score after submission */}
+      {score !== null && (
+        <div>
+          <h3>Your total score is: {score}</h3>
+        </div>
       )}
     </div>
   );
